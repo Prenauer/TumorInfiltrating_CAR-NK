@@ -1,0 +1,14 @@
+        Sample  Source Time
+VinoB01_MMT  Spleen    7
+VinoB02_MMT   Tumor    7
+VinoB03_MMT  Spleen   10
+VinoB04_MMT   Tumor   10
+VinoB05_MMT  Spleen   15
+VinoB06_MMT   Tumor   15
+VinoC01_MMT Culture    0
+VinoC02_MMT Culture    0
+VinoE01_MMT  Spleen    7
+VinoE02_MMT   Tumor    7
+VinoE03_MMT  Spleen   10
+VinoE04_MMT   Tumor   10
+VinoE06_MMT   Tumor   15

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+## Trim reads to sgRNA spacer
+DIR_IN=/Screen/RawFastq
+DIR_OUT=/Screen/TrimmedFastq
+TRIM_FWD=/Screen/fwd_barcodes_extended.fasta
+TRIM_REV=gttttagagctagaaatagcaagt
+for i in {1..8}
+do 
+FQ_IN=$( ls ${DIR_IN}/*_S${i}_*_R1_*.fastq )
+FQ_OUT1=${DIR_OUT}/NKscreen_S${i}_R-trim
+FQ_OUT2=${DIR_OUT}/NKscreen_S${i}
+cutadapt -j 0 -e 0.10 --discard-untrimmed -a ${TRIM_REV} ${FQ_IN} -o ${FQ_OUT1}_v2.fq &> ${FQ_OUT1}_R-trim_v2.log
+cutadapt -j 0 -e 0.10 -m 15 --discard-untrimmed -g file:${TRIM_FWD} ${FQ_OUT1}_v2.fq -o ${FQ_OUT2}{name}_trim_v2.fq &> ${FQ_OUT2}_demult_v2.log
+done
+
+
+## Align with Bowtie
+DIR_IN=/Screen/TrimmedFastq
+DIR_OUT=/Screen/AlignedFastq
+LIBRARY=/Screen/mSurfaceomeV2_libInfo
+for FQ in $( ls ${DIR_IN}/NKscreen_S*_trim_v2.fq )
+do 
+OUT=$( echo ${FQ} | sed 's/TrimmedFastq/AlignedFastq/g' | cut -f1 -d'.' )_align
+bowtie -v 0 -m 1 --threads 20 --suppress 4,5,6,7 --chunkmbs 2000 --best ${LIBRARY} -q ${FQ} 2> ${OUT}.log > ${OUT}.bwt
+cut -f3 ${OUT}.bwt | sort | uniq -c | gawk '{$1=$1;print $2,$1}' > ${OUT}_count_v2.txt
+done
+
+
+## combine tech-reps
+R CMD BATCH /Screen/TINK_cScreen_02b-Preprocessing_v1.0.R
+
+
+

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+ADAPTERS=TruSeq3-PE-2.fa
+REF_TX=Homo_sapiens.GRCh38.96.transcriptome.idx
+
+
+for i in {1..12};
+do
+# Set variables
+SAMPLE_NAME=Sample${i}
+FQ1_IN=raw_fastq/${SAMPLE_NAME}_*R1_001.fastq
+FQ2_IN=raw_fastq/${SAMPLE_NAME}_*R2_001.fastq
+FQ1_TRIM=${SAMPLE_NAME}_R1.fq
+FQ2_TRIM=${SAMPLE_NAME}_R2.fq
+TRIM_LOG=${SAMPLE_NAME}_trim_report.txt
+ALIGN_LOG=${SAMPLE_NAME}_align_report.txt
+
+# check qc
+fastqc -t20 ${FQ1_IN} ${FQ2_IN}
+
+# remove adapters
+cutadapt -j 0 -a ATCTCGTATGCCGTCTTCTGCTTG -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -m 36 -e 0.2 -o ${FQ1_TRIM} -p ${FQ2_TRIM} ${FQ1_IN} ${FQ2_IN} 
+
+# align reads
+kallisto quant -i ${REF_TX} -o ${SAMPLE_NAME} -b 100 -t 20 --seed=42 ${FQ1_TRIM} ${FQ2_TRIM} &> ${ALIGN_LOG}
+done
